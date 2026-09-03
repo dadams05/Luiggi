@@ -16,10 +16,6 @@ include(FetchContent)
 # SDL3
 # ---------------------------------------------------
 
-# set(SDL_SHARED OFF CACHE BOOL "" FORCE)
-# set(SDL_STATIC ON  CACHE BOOL "" FORCE)
-# set(SDL_INSTALL ON CACHE BOOL "" FORCE)
-
 set(SDL_AUDIO OFF CACHE BOOL "" FORCE)
 set(SDL_GPU OFF CACHE BOOL "" FORCE)
 set(SDL_CAMERA OFF CACHE BOOL "" FORCE)
@@ -44,34 +40,28 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SDL3)
 
-# Ensure all target variants exist for downstream consumers like SDL_image
-# if(TARGET SDL3::SDL3-static)
-#     if(NOT TARGET SDL3::SDL3)
-#         add_library(SDL3::SDL3 ALIAS SDL3::SDL3-static)
-#     endif()
-#     if(NOT TARGET SDL3::SDL3-shared)
-#         add_library(SDL3::SDL3-shared ALIAS SDL3::SDL3-static)
-#     endif()
-# endif()
-
-# ---------------------------------------------------
-# Intercept SDL_image's find_package(SDL3) call
-# ---------------------------------------------------
-# file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/cmake/FindSDL3.cmake" "
-#     set(SDL3_FOUND TRUE)
-#     if(TARGET SDL3::SDL3-static AND NOT TARGET SDL3::SDL3)
-#         add_library(SDL3::SDL3 ALIAS SDL3::SDL3-static)
-#     endif()
-# ")
-# list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}/cmake")
-
 # ---------------------------------------------------
 # SDL_image
 # ---------------------------------------------------
 
-# set(SDLIMAGE_VENDORED ON CACHE BOOL "" FORCE)
-# set(SDLIMAGE_DEPS_SHARED OFF CACHE BOOL "" FORCE)
-# set(SDLIMAGE_INSTALL OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_STB OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_AVIF OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_ANI OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_BMP OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_GIF OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_JPG OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_LBM OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_PCX OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_APNG OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_PNM OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_QOI OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_SVG OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_TGA OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_TIF OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_WEBP OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_XCF OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_XPM OFF CACHE BOOL "" FORCE)
+set(SDLIMAGE_XV OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     SDL_image
@@ -138,10 +128,17 @@ target_link_libraries(Luiggi
         SDL3_image::SDL3_image
 )
 
-# post-build commands
-# add_custom_command(TARGET Luiggi POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#        "$<TARGET_RUNTIME_DLLS:Luiggi>"
-#        "$<TARGET_FILE_DIR:Luiggi>"
-#     COMMAND_EXPAND_LISTS
-# )
+###################################
+#
+# Windows specific
+#
+###################################
+
+if (WIN32)
+    add_custom_command(TARGET Luiggi POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "$<TARGET_RUNTIME_DLLS:Luiggi>"
+        "$<TARGET_FILE_DIR:Luiggi>"
+        COMMAND_EXPAND_LISTS
+    )
+endif()
