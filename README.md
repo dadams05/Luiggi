@@ -7,3 +7,10 @@
   - `Release`
   - `RelWithDebInfo`
   - `MinSizeRel`
+- to build for release `cmake --build build --config Release` also have config `MinSizeRel`
+
+## how to turn font file (.ttf or .otf)
+- get ur font file
+- go to linux
+- run this command
+`xxd -i my_font.ttf > my_font.cpp` or `my_font.h` whatever u need

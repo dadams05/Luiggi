@@ -12,9 +12,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
-# ---------------------------------------------------
 # SDL3
-# ---------------------------------------------------
+
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC ON CACHE BOOL "" FORCE)
 
 set(SDL_AUDIO OFF CACHE BOOL "" FORCE)
 set(SDL_GPU OFF CACHE BOOL "" FORCE)
@@ -40,41 +41,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SDL3)
 
-# ---------------------------------------------------
-# SDL_image
-# ---------------------------------------------------
-
-set(SDLIMAGE_STB OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_AVIF OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_ANI OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_BMP OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_GIF OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_JPG OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_LBM OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_PCX OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_APNG OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_PNM OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_QOI OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_SVG OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_TGA OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_TIF OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_WEBP OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_XCF OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_XPM OFF CACHE BOOL "" FORCE)
-set(SDLIMAGE_XV OFF CACHE BOOL "" FORCE)
-
-FetchContent_Declare(
-    SDL_image
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
-    GIT_TAG release-3.4.4
-    GIT_SHALLOW TRUE
-)
-
-FetchContent_MakeAvailable(SDL_image)
-
-# ---------------------------------------------------
 # ImGui
-# ---------------------------------------------------
 
 FetchContent_Declare(
     ImGui
@@ -84,6 +51,15 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(ImGui)
+
+# CMakeRC script (for resources, the png)
+
+file(DOWNLOAD 
+    "https://raw.githubusercontent.com/vector-of-bool/cmrc/master/CMakeRC.cmake" 
+    "${CMAKE_BINARY_DIR}/CMakeRC.cmake"
+)
+
+include("${CMAKE_BINARY_DIR}/CMakeRC.cmake")
 
 #####################################################
 #
@@ -118,14 +94,21 @@ target_link_libraries(ImGui
 #
 ###################################
 
+# create a resource library named "lugi"
+cmrc_add_resource_library(lugi
+    NAMESPACE da_luiggi
+    "res/luiggi.png"
+)
+
 add_executable(Luiggi
     "src/main.cpp"
+    "src/new_super_mario_font_u.cpp"
 )
 
 target_link_libraries(Luiggi
     PRIVATE
         ImGui
-        SDL3_image::SDL3_image
+        lugi
 )
 
 ###################################
@@ -135,10 +118,8 @@ target_link_libraries(Luiggi
 ###################################
 
 if (WIN32)
-    add_custom_command(TARGET Luiggi POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_RUNTIME_DLLS:Luiggi>"
-        "$<TARGET_FILE_DIR:Luiggi>"
-        COMMAND_EXPAND_LISTS
+    # console in debug, no console in release
+    set_target_properties(Luiggi PROPERTIES
+        WIN32_EXECUTABLE $<$<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>>:ON>
     )
 endif()
